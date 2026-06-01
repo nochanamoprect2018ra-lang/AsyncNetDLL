@@ -6,7 +6,6 @@
 #pragma once
 
 #include "AsyncNetDLL.h"
-#include "AsyncNetworkManager.h"
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -106,6 +105,7 @@ private:
     void UpdateWaitTimeStats(const RequestContext& request);
     void IncrementCounter(RequestType type);
     void DecrementCounter(RequestType type);
+    RequestPriority GetRequestPriority(RequestType type) const;
 
 public:
     RequestQueue();
