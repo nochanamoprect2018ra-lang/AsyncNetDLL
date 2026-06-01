@@ -1,0 +1,39 @@
+EXPORTS
+; AsyncNetDLL - 导出函数定义文件
+; 用于明确指定DLL导出的函数
+
+; 初始化和配置
+AsyncNet_Initialize
+AsyncNet_SetAuth
+AsyncNet_SetConfig
+
+; 异步请求接口
+AsyncNet_SendHeartbeat
+AsyncNet_SendEvents
+AsyncNet_FetchParams
+AsyncNet_SendPing
+
+; 响应处理
+AsyncNet_ProcessResponses
+AsyncNet_GetHeartbeatResponse
+AsyncNet_GetEventsResponse
+AsyncNet_GetParamsResponse
+AsyncNet_GetPingResponse
+
+; 状态查询
+AsyncNet_GetConnectionStatus
+AsyncNet_GetQueueLength
+AsyncNet_GetStatistics
+AsyncNet_GetLastError
+
+; 控制接口
+AsyncNet_Pause
+AsyncNet_Resume
+AsyncNet_ClearQueue
+
+; 清理
+AsyncNet_Cleanup
+
+; 版本信息
+AsyncNet_GetVersion
+AsyncNet_GetBuildNumber

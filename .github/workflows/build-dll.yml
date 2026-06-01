@@ -1,0 +1,165 @@
+name: Build AsyncNetDLL
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'CMakeLists.txt'
+      - 'vcpkg.json'
+      - '.github/workflows/build-dll.yml'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  # ============================================================
+  # 交叉编译 Windows x64 DLL (Ubuntu + MinGW-w64)
+  # ============================================================
+  build-dll:
+    name: Build AsyncNetDLL (MinGW)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install MinGW-w64
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64 g++-mingw-w64-x86-64-posix cmake ninja-build
+
+      # 使用 vcpkg 安装交叉编译的 libcurl 和 OpenSSL
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '2025.01.13'
+
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg
+            ${{ github.workspace }}/vcpkg_installed
+          key: vcpkg-mingw-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-mingw-
+
+      - name: Install dependencies via vcpkg
+        run: |
+          vcpkg install --triplet=x64-mingw-static
+
+      - name: Build DLL
+        run: |
+          mkdir -p build && cd build
+
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DVCPKG_TARGET_TRIPLET=x64-mingw-static \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_SYSTEM_PROCESSOR=x86_64 \
+            -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix \
+            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++-posix \
+            -DCMAKE_BUILD_TYPE=Release \
+            -GNinja
+
+          ninja -j$(nproc)
+
+      - name: Verify DLL
+        run: |
+          DLL=$(find build -name "AsyncNetDLL.dll" | head -1)
+          if [[ -z "$DLL" ]]; then
+            echo "ERROR: DLL not found!"
+            find build -type f
+            exit 1
+          fi
+
+          echo "=== Build Result ==="
+          file "$DLL"
+          ls -lh "$DLL"
+          echo ""
+          echo "=== Exported Functions ==="
+          x86_64-w64-mingw32-objdump -p "$DLL" | grep -A 100 "Export Table" | head -40
+          echo ""
+          echo "=== DLL Dependencies ==="
+          x86_64-w64-mingw32-objdump -p "$DLL" | grep "DLL Name"
+
+      - name: Upload DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AsyncNetDLL-win64
+          path: build/**/AsyncNetDLL.dll
+          retention-days: 30
+
+  # ============================================================
+  # 发布 Release (仅 main/master 的 push 触发)
+  # ============================================================
+  release:
+    name: Create Release
+    needs: [build-dll]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version info
+        id: info
+        run: |
+          VERSION=$(grep 'ASYNCNET_VERSION' include/AsyncNetDLL.h | grep -oP '"\K[^"]+')
+          BUILD_NUM=$(grep 'ASYNCNET_BUILD_NUMBER' include/AsyncNetDLL.h | grep -oP '\d+')
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DATE=$(date +'%Y-%m-%d %H:%M')
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "build=${BUILD_NUM}" >> $GITHUB_OUTPUT
+          echo "sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "date=${DATE}" >> $GITHUB_OUTPUT
+
+      - name: Download DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: AsyncNetDLL-win64
+          path: release/
+
+      - name: Verify and prepare
+        run: |
+          sudo apt-get update && sudo apt-get install -y mingw-w64
+          DLL=$(find release/ -name "AsyncNetDLL.dll" | head -1)
+          mv "$DLL" release/AsyncNetDLL.dll 2>/dev/null || true
+          echo "=== Release DLL ==="
+          file release/AsyncNetDLL.dll
+          ls -lh release/AsyncNetDLL.dll
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "asyncnet-v${{ steps.info.outputs.version }}-b${{ steps.info.outputs.build }}"
+          name: "AsyncNetDLL ${{ steps.info.outputs.version }} (Build ${{ steps.info.outputs.build }})"
+          body: |
+            ## AsyncNetDLL ${{ steps.info.outputs.version }}
+
+            | 项目 | 值 |
+            |------|-----|
+            | 构建号 | ${{ steps.info.outputs.build }} |
+            | 时间 | ${{ steps.info.outputs.date }} |
+            | 提交 | `${{ steps.info.outputs.sha }}` |
+
+            ### 下载
+            - `AsyncNetDLL.dll` - Windows x64 (无外部依赖)
+
+            ### 部署
+            将 DLL 复制到 MT4 的 `MQL4/Libraries/` 目录即可使用。
+
+            ### 变更
+            ${{ github.event.head_commit.message }}
+          files: |
+            release/AsyncNetDLL.dll
+          draft: false
+          prerelease: false

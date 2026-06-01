@@ -1,0 +1,9 @@
+{
+  "name": "asyncnetdll",
+  "version-string": "1.0.0",
+  "description": "Async Network DLL for MT4/MT5 - libcurl based",
+  "dependencies": [
+    "curl",
+    "openssl"
+  ]
+}
