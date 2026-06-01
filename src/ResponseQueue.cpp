@@ -144,7 +144,7 @@ bool ResponseQueue::GetResponse(RequestType type, std::string& response_data) {
 
     // 从队列获取
     auto response = Pop(type);
-    if (response && response->status == STATUS_SUCCESS) {
+    if (response && response->status == REQ_STATUS_SUCCESS) {
         response_data = response->response_data;
         return true;
     }
@@ -166,7 +166,7 @@ int ResponseQueue::ProcessCompleted() {
 
         while (!queue.empty()) {
             auto& response = queue.front();
-            if (response && response->status != static_cast<RequestStatus>(STATUS_PENDING)) {
+            if (response && response->status != static_cast<RequestStatus>(REQ_STATUS_PENDING)) {
                 response->processed = true;
                 processed_responses_.fetch_add(1);
                 processed_count++;
@@ -427,7 +427,7 @@ void ResponseQueue::UpdateStatistics(const ResponseContext& response) {
 //+------------------------------------------------------------------+
 void HeartbeatResponseHandler::HandleResponse(const ResponseContext& response) {
     // 处理心跳响应的特定逻辑
-    if (response.status == STATUS_SUCCESS) {
+    if (response.status == REQ_STATUS_SUCCESS) {
         // 解析心跳响应，检查服务器指令
         // 这里可以添加具体的心跳响应处理逻辑
     }
@@ -435,7 +435,7 @@ void HeartbeatResponseHandler::HandleResponse(const ResponseContext& response) {
 
 void EventsResponseHandler::HandleResponse(const ResponseContext& response) {
     // 处理事件上报响应的特定逻辑
-    if (response.status == STATUS_SUCCESS) {
+    if (response.status == REQ_STATUS_SUCCESS) {
         // 确认事件已成功上报
         // 这里可以添加具体的事件响应处理逻辑
     }
@@ -443,7 +443,7 @@ void EventsResponseHandler::HandleResponse(const ResponseContext& response) {
 
 void ParamsResponseHandler::HandleResponse(const ResponseContext& response) {
     // 处理参数拉取响应的特定逻辑
-    if (response.status == STATUS_SUCCESS) {
+    if (response.status == REQ_STATUS_SUCCESS) {
         // 解析并应用新参数
         // 这里可以添加具体的参数响应处理逻辑
     }

@@ -180,7 +180,7 @@ void AsyncNetworkManager::ExecuteRequest(RequestContext* request) {
     }
 
     request->sent_time = std::chrono::steady_clock::now();
-    request->status = static_cast<RequestStatus>(STATUS_PENDING);
+    request->status = static_cast<RequestStatus>(REQ_STATUS_PENDING);
 
     // 获取连接
     CURL* handle = connection_pool_->AcquireHandle();
@@ -231,13 +231,13 @@ void AsyncNetworkManager::ExecuteRequest(RequestContext* request) {
 
         // 处理结果
         if (res == CURLE_OK && response_code >= 200 && response_code < 300) {
-            request->status = STATUS_SUCCESS;
+            request->status = REQ_STATUS_SUCCESS;
             request->response = response_data;
         } else if (res == CURLE_OPERATION_TIMEDOUT) {
-            request->status = STATUS_TIMEOUT;
+            request->status = REQ_STATUS_TIMEOUT;
             request->error_message = "Request timeout";
         } else {
-            request->status = STATUS_ERROR;
+            request->status = REQ_STATUS_ERROR;
             request->error_message = curl_easy_strerror(res);
         }
 
@@ -252,9 +252,9 @@ void AsyncNetworkManager::ExecuteRequest(RequestContext* request) {
     connection_pool_->ReleaseHandle(handle);
 
     // 处理重试逻辑
-    if (request->status != STATUS_SUCCESS && ShouldRetry(request)) {
+    if (request->status != REQ_STATUS_SUCCESS && ShouldRetry(request)) {
         request->retry_count++;
-        request->status = static_cast<RequestStatus>(STATUS_PENDING);
+        request->status = static_cast<RequestStatus>(REQ_STATUS_PENDING);
 
         // 重新加入队列
         auto retry_request = std::make_unique<RequestContext>(*request);
@@ -333,7 +333,7 @@ void AsyncNetworkManager::UpdateStatistics(RequestContext* request) {
     switch (request->type) {
         case REQ_HEARTBEAT:
             stats_.heartbeat_sent++;
-            if (request->status == STATUS_SUCCESS) {
+            if (request->status == REQ_STATUS_SUCCESS) {
                 stats_.heartbeat_success++;
                 stats_.avg_heartbeat_latency =
                     (stats_.avg_heartbeat_latency * (stats_.heartbeat_success - 1) + request->latency_ms) / stats_.heartbeat_success;
@@ -344,7 +344,7 @@ void AsyncNetworkManager::UpdateStatistics(RequestContext* request) {
 
         case REQ_EVENTS:
             stats_.events_sent++;
-            if (request->status == STATUS_SUCCESS) {
+            if (request->status == REQ_STATUS_SUCCESS) {
                 stats_.events_success++;
                 stats_.avg_events_latency =
                     (stats_.avg_events_latency * (stats_.events_success - 1) + request->latency_ms) / stats_.events_success;
@@ -355,7 +355,7 @@ void AsyncNetworkManager::UpdateStatistics(RequestContext* request) {
 
         case REQ_PARAMS:
             stats_.params_fetched++;
-            if (request->status == STATUS_SUCCESS) {
+            if (request->status == REQ_STATUS_SUCCESS) {
                 stats_.params_success++;
                 stats_.avg_params_latency =
                     (stats_.avg_params_latency * (stats_.params_success - 1) + request->latency_ms) / stats_.params_success;
@@ -406,7 +406,7 @@ bool AsyncNetworkManager::ShouldRetry(RequestContext* request) {
     }
 
     // 检查错误类型
-    if (request->status == STATUS_AUTH_ERROR) {
+    if (request->status == REQ_STATUS_AUTH_ERROR) {
         return false; // 认证错误不重试
     }
 
@@ -420,7 +420,7 @@ bool AsyncNetworkManager::ShouldRetry(RequestContext* request) {
 void AsyncNetworkManager::HandleRequestError(RequestContext* request, const std::string& error) {
     if (!request) return;
 
-    request->status = STATUS_ERROR;
+    request->status = REQ_STATUS_ERROR;
     request->error_message = error;
 
     auto end_time = std::chrono::steady_clock::now();

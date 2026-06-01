@@ -30,12 +30,12 @@ enum RequestType {
 //| 请求状态枚举                                                      |
 //+------------------------------------------------------------------+
 enum RequestStatus {
-    STATUS_PENDING = 0,   // 等待处理
-    STATUS_SUCCESS = 1,   // 成功完成
-    STATUS_ERROR = 2,     // 请求错误
-    STATUS_TIMEOUT = 3,   // 请求超时
-    STATUS_NETWORK_ERROR = 4,  // 网络错误
-    STATUS_AUTH_ERROR = 5      // 认证错误
+    REQ_STATUS_PENDING = 0,   // 等待处理
+    REQ_STATUS_SUCCESS = 1,   // 成功完成
+    REQ_STATUS_ERROR = 2,     // 请求错误
+    REQ_STATUS_TIMEOUT = 3,   // 请求超时
+    REQ_STATUS_NETWORK_ERROR = 4,  // 网络错误
+    REQ_STATUS_AUTH_ERROR = 5      // 认证错误
 };
 
 //+------------------------------------------------------------------+

@@ -36,7 +36,7 @@ struct RequestContext {
     double latency_ms;         // 延迟时间(毫秒)
 
     RequestContext() : id(0), type(REQ_HEARTBEAT), retry_count(0),
-                      status(static_cast<RequestStatus>(STATUS_PENDING)), response_code(0), latency_ms(0.0) {}
+                      status(static_cast<RequestStatus>(REQ_STATUS_PENDING)), response_code(0), latency_ms(0.0) {}
 };
 
 //+------------------------------------------------------------------+
