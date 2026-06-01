@@ -135,7 +135,7 @@ public:
         int heartbeat_responses;
         int events_responses;
         int params_responses;
-        int queue_lengths[4]; // 按RequestType索引
+        int queue_lengths[5]; // 按RequestType索引 (REQ_PING=4)
     };
     void GetStatistics(QueueStatistics& stats) const;
     void ResetStatistics();

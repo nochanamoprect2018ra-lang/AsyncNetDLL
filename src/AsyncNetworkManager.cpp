@@ -10,6 +10,8 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <cmath>
+#include <random>
 
 //+------------------------------------------------------------------+
 //| 构造函数和析构函数                                                |
@@ -169,8 +171,17 @@ void AsyncNetworkManager::WorkerThread() {
         if (request) {
             ExecuteRequest(request.get());
 
-            // 将响应添加到响应队列
-            response_queue_->Push(std::move(request));
+            // 将 RequestContext 转换为 ResponseContext 并添加到响应队列
+            auto response = std::make_unique<ResponseContext>();
+            response->request_id = request->id;
+            response->type = request->type;
+            response->status = request->status;
+            response->response_data = request->response;
+            response->error_message = request->error_message;
+            response->http_code = request->response_code;
+            response->latency_ms = request->latency_ms;
+            response->received_time = std::chrono::steady_clock::now();
+            response_queue_->Push(std::move(response));
         }
     }
 }
@@ -489,4 +500,37 @@ void AsyncNetworkManager::Shutdown() {
     connection_pool_.reset();
     request_queue_.reset();
     response_queue_.reset();
+}
+
+//+------------------------------------------------------------------+
+//| 工具函数                                                          |
+//+------------------------------------------------------------------+
+std::string AsyncNetworkManager::GenerateNonce() {
+    static thread_local std::mt19937 rng(std::random_device{}());
+    static const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::uniform_int_distribution<int> dist(0, sizeof(charset) - 2);
+
+    std::string nonce;
+    nonce.reserve(16);
+    for (int i = 0; i < 16; ++i) {
+        nonce += charset[dist(rng)];
+    }
+    return nonce;
+}
+
+std::string AsyncNetworkManager::UrlEncode(const std::string& data) {
+    // 使用 libcurl 的 curl_easy_escape 进行 URL 编码
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        return data; // 回退，返回原始数据
+    }
+
+    char* encoded = curl_easy_escape(curl, data.c_str(), static_cast<int>(data.length()));
+    std::string result;
+    if (encoded) {
+        result = encoded;
+        curl_free(encoded);
+    }
+    curl_easy_cleanup(curl);
+    return result;
 }
