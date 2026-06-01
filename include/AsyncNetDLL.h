@@ -15,6 +15,8 @@
 #endif
 
 #include <stdint.h>
+#include <string>
+#include <chrono>
 
 //+------------------------------------------------------------------+
 //| 请求类型枚举                                                      |
@@ -36,6 +38,28 @@ enum RequestStatus {
     REQ_STATUS_TIMEOUT = 3,   // 请求超时
     REQ_STATUS_NETWORK_ERROR = 4,  // 网络错误
     REQ_STATUS_AUTH_ERROR = 5      // 认证错误
+};
+
+//+------------------------------------------------------------------+
+//| 请求上下文结构                                                    |
+//+------------------------------------------------------------------+
+struct RequestContext {
+    int id;                    // 请求ID
+    RequestType type;          // 请求类型
+    std::string url;           // 请求URL
+    std::string data;          // 请求数据
+    std::string headers;       // 请求头
+    std::chrono::steady_clock::time_point created_time;  // 创建时间
+    std::chrono::steady_clock::time_point sent_time;     // 发送时间
+    int retry_count;           // 重试次数
+    RequestStatus status;      // 请求状态
+    std::string response;      // 响应数据
+    std::string error_message; // 错误信息
+    long response_code;        // HTTP响应码
+    double latency_ms;         // 延迟时间(毫秒)
+
+    RequestContext() : id(0), type(REQ_HEARTBEAT), retry_count(0),
+                      status(static_cast<RequestStatus>(REQ_STATUS_PENDING)), response_code(0), latency_ms(0.0) {}
 };
 
 //+------------------------------------------------------------------+
