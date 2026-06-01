@@ -8,7 +8,9 @@
 #include "AsyncNetDLL.h"
 #include "ConnectionPool.h"
 #include "RequestQueue.h"
-#include "ResponseQueue.h"
+
+// Forward declaration to break circular dependency with ResponseQueue.h
+class ResponseQueue;
 #include <memory>
 #include <vector>
 #include <thread>

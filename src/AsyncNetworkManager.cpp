@@ -3,6 +3,7 @@
 //|                  异步网络管理器 - 实现文件                         |
 //+------------------------------------------------------------------+
 #include "AsyncNetworkManager.h"
+#include "ResponseQueue.h"
 #include "HMACUtils.h"
 #include <curl/curl.h>
 #include <chrono>
