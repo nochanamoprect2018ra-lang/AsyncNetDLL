@@ -9,9 +9,17 @@
 #define ASYNCNETDLL_H
 
 #ifdef ASYNCNETDLL_EXPORTS
-#define ASYNCNET_API __declspec(dllexport)
+    #ifdef _WIN32
+        #define ASYNCNET_API __declspec(dllexport)
+    #else
+        #define ASYNCNET_API __attribute__((visibility("default")))
+    #endif
 #else
-#define ASYNCNET_API __declspec(dllimport)
+    #ifdef _WIN32
+        #define ASYNCNET_API __declspec(dllimport)
+    #else
+        #define ASYNCNET_API
+    #endif
 #endif
 
 #include <stdint.h>

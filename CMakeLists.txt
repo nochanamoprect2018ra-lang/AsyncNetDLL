@@ -15,9 +15,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 if(MSVC)
     add_compile_options(/W4 /WX- /MP)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    add_compile_definitions(ASYNCNETDLL_EXPORTS)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_definitions(ASYNCNETDLL_EXPORTS)
 endif()
 
 # 查找依赖库
