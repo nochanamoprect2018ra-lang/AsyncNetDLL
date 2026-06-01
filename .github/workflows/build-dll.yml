@@ -37,7 +37,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: '2025.01.13'
+          vcpkgGitCommitId: 'eae1680538b86f962455c27abca2aad0dc304a4d'
 
       - name: Cache vcpkg packages
         uses: actions/cache@v4
