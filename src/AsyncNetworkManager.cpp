@@ -4,7 +4,6 @@
 //+------------------------------------------------------------------+
 #include "AsyncNetworkManager.h"
 #include "HMACUtils.h"
-#include "Base64Utils.h"
 #include <curl/curl.h>
 #include <chrono>
 #include <sstream>
@@ -181,7 +180,7 @@ void AsyncNetworkManager::ExecuteRequest(RequestContext* request) {
     }
 
     request->sent_time = std::chrono::steady_clock::now();
-    request->status = STATUS_PENDING;
+    request->status = static_cast<RequestStatus>(STATUS_PENDING);
 
     // 获取连接
     CURL* handle = connection_pool_->AcquireHandle();
@@ -255,7 +254,7 @@ void AsyncNetworkManager::ExecuteRequest(RequestContext* request) {
     // 处理重试逻辑
     if (request->status != STATUS_SUCCESS && ShouldRetry(request)) {
         request->retry_count++;
-        request->status = STATUS_PENDING;
+        request->status = static_cast<RequestStatus>(STATUS_PENDING);
 
         // 重新加入队列
         auto retry_request = std::make_unique<RequestContext>(*request);

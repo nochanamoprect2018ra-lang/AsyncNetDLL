@@ -274,7 +274,7 @@ void ConnectionPool::ConfigureForWine(CURL* handle) {
     curl_easy_setopt(handle, CURLOPT_TCP_NODELAY, 1L);
 
     // 降低超时时间以避免Wine下的阻塞问题
-    curl_easy_setopt(handle, CURLOPT_TIMEOUT, std::min(timeout_ms_ / 1000, 10L));
+    curl_easy_setopt(handle, CURLOPT_TIMEOUT, std::min(timeout_ms_ / 1000L, 10L));
     curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, 3L);
 }
 

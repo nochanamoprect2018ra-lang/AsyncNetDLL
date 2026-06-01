@@ -166,7 +166,7 @@ int ResponseQueue::ProcessCompleted() {
 
         while (!queue.empty()) {
             auto& response = queue.front();
-            if (response && response->status != STATUS_PENDING) {
+            if (response && response->status != static_cast<RequestStatus>(STATUS_PENDING)) {
                 response->processed = true;
                 processed_responses_.fetch_add(1);
                 processed_count++;

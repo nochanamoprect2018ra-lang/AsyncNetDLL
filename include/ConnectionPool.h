@@ -6,6 +6,7 @@
 #pragma once
 
 #include <curl/curl.h>
+#include "AsyncNetDLL.h"
 #include <vector>
 #include <queue>
 #include <mutex>
@@ -35,7 +36,7 @@ class ConnectionPool {
 private:
     std::vector<std::unique_ptr<ConnectionInfo>> connections_;
     std::queue<ConnectionInfo*> available_connections_;
-    std::mutex pool_mutex_;
+    mutable std::mutex pool_mutex_;
 
     // 配置参数
     std::string server_host_;

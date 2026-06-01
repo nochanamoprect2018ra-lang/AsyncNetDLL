@@ -28,7 +28,7 @@ struct ResponseContext {
     std::chrono::steady_clock::time_point received_time;  // 接收时间
     bool processed;                // 是否已处理
 
-    ResponseContext() : request_id(0), type(REQ_HEARTBEAT), status(STATUS_PENDING),
+    ResponseContext() : request_id(0), type(REQ_HEARTBEAT), status(static_cast<RequestStatus>(STATUS_PENDING)),
                        http_code(0), latency_ms(0.0), processed(false) {}
 
     ResponseContext(int id, RequestType req_type, RequestStatus req_status,
