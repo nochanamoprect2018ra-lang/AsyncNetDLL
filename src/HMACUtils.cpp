@@ -32,14 +32,20 @@ std::string HMACUtils::HMAC_SHA256(const std::string& key, const std::string& da
 }
 
 std::string HMACUtils::SHA256(const std::string& data) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_len = 0;
 
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, data.c_str(), data.length());
-    SHA256_Final(hash, &sha256);
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if (!mdctx) {
+        return "";
+    }
 
-    std::vector<unsigned char> hash_bytes(hash, hash + SHA256_DIGEST_LENGTH);
+    EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr);
+    EVP_DigestUpdate(mdctx, data.c_str(), data.length());
+    EVP_DigestFinal_ex(mdctx, hash, &hash_len);
+    EVP_MD_CTX_free(mdctx);
+
+    std::vector<unsigned char> hash_bytes(hash, hash + hash_len);
     return BytesToHex(hash_bytes);
 }
 
