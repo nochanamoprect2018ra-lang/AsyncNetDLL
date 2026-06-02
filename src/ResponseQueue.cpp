@@ -92,7 +92,7 @@ bool ResponseQueue::Push(std::unique_ptr<ResponseContext> response) {
 
     // 更新统计信息
     total_responses_.fetch_add(1);
-    UpdateStatistics(response_ptr);
+    UpdateStatistics(*response_ptr);
 
     return true;
 }
