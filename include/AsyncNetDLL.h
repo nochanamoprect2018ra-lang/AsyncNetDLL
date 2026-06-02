@@ -173,7 +173,7 @@ extern "C" {
 //| 配置常量                                                          |
 //+------------------------------------------------------------------+
 #define ASYNCNET_VERSION          "1.0.0"
-#define ASYNCNET_BUILD_NUMBER     1001
+#define ASYNCNET_BUILD_NUMBER     1002
 #define ASYNCNET_MAX_CONNECTIONS  10
 #define ASYNCNET_MAX_WORKERS      4
 #define ASYNCNET_MAX_QUEUE_SIZE   1000
