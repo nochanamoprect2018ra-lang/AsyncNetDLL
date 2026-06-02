@@ -173,11 +173,11 @@ void AsyncNetworkManager::WorkerThread() {
             // 将请求转换为响应并添加到响应队列
             auto response = std::make_unique<ResponseContext>();
             response->request_id = request->id;
-            response->request_type = request->type;
+            response->type = request->type;
             response->status = request->status;
             response->response_data = request->response;
             response->error_message = request->error_message;
-            response->response_code = request->response_code;
+            response->http_code = request->response_code;
             response->latency_ms = request->latency_ms;
 
             response_queue_->Push(std::move(response));
