@@ -68,6 +68,7 @@ bool ResponseQueue::Push(std::unique_ptr<ResponseContext> response) {
     }
 
     RequestType type = response->type;
+    ResponseContext* response_ptr = response.get();
 
     {
         std::lock_guard<std::mutex> lock(queue_mutex_);
@@ -86,12 +87,12 @@ bool ResponseQueue::Push(std::unique_ptr<ResponseContext> response) {
     {
         std::lock_guard<std::mutex> cache_lock(cache_mutex_);
         // 更新最新响应缓存
-        latest_responses_[type] = std::make_unique<ResponseContext>(*response);
+        latest_responses_[type] = std::make_unique<ResponseContext>(*response_ptr);
     }
 
     // 更新统计信息
     total_responses_.fetch_add(1);
-    UpdateStatistics(*response);
+    UpdateStatistics(response_ptr);
 
     return true;
 }
