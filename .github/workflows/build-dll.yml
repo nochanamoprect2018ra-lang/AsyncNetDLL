@@ -191,8 +191,8 @@ jobs:
       - name: Get version info
         id: info
         run: |
-          VERSION=$(grep 'ASYNCNET_VERSION' include/AsyncNetDLL.h | grep -oP '"\\K[^"]+')
-          BUILD_NUM=$(grep 'ASYNCNET_BUILD_NUMBER' include/AsyncNetDLL.h | grep -oP '\\d+')
+          VERSION=$(grep 'ASYNCNET_VERSION' include/AsyncNetDLL.h | grep -oP '"\K[^"]+')
+          BUILD_NUM=$(grep 'ASYNCNET_BUILD_NUMBER' include/AsyncNetDLL.h | grep -oP '\d+')
           SHORT_SHA=$(git rev-parse --short HEAD)
           DATE=$(date +'%Y-%m-%d %H:%M')
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
