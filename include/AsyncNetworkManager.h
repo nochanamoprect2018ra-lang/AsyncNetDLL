@@ -51,7 +51,7 @@ private:
 
     // 统计信息
     NetworkStats stats_;
-    std::mutex stats_mutex_;
+    mutable std::mutex stats_mutex_;
     std::atomic<int> next_request_id_;
 
     // 内部方法

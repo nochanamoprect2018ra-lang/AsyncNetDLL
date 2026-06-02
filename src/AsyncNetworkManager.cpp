@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <cmath>
 
 //+------------------------------------------------------------------+
 //| 构造函数和析构函数                                                |
@@ -169,8 +170,17 @@ void AsyncNetworkManager::WorkerThread() {
         if (request) {
             ExecuteRequest(request.get());
 
-            // 将响应添加到响应队列
-            response_queue_->Push(std::move(request));
+            // 将请求转换为响应并添加到响应队列
+            auto response = std::make_unique<ResponseContext>();
+            response->request_id = request->id;
+            response->request_type = request->type;
+            response->status = request->status;
+            response->response_data = request->response;
+            response->error_message = request->error_message;
+            response->response_code = request->response_code;
+            response->latency_ms = request->latency_ms;
+
+            response_queue_->Push(std::move(response));
         }
     }
 }
@@ -299,7 +309,7 @@ std::string AsyncNetworkManager::BuildRequestUrl(RequestType type, const std::st
         // 生成时间戳和nonce
         auto now = std::chrono::system_clock::now();
         auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-        std::string nonce = GenerateNonce();
+        std::string nonce = HMACUtils::GenerateNonce();
 
         // 生成签名
         std::string signature = GenerateSignature(data);
@@ -313,7 +323,7 @@ std::string AsyncNetworkManager::BuildRequestUrl(RequestType type, const std::st
 
         // 添加数据参数
         if (!data.empty()) {
-            url << "&data=" << UrlEncode(data);
+            url << "&data=" << HMACUtils::UrlEncode(data);
         }
     }
 
