@@ -216,9 +216,16 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y mingw-w64
 
+          # artifact 保留 build 子目录结构，用 find 定位
+          DLL64=$(find release/x64 -name "AsyncNetDLL.dll" | head -1)
+          DLL86=$(find release/x86 -name "AsyncNetDLL.dll" | head -1)
+
+          if [[ -z "$DLL64" ]]; then echo "ERROR: x64 DLL not found"; find release/ -type f; exit 1; fi
+          if [[ -z "$DLL86" ]]; then echo "ERROR: x86 DLL not found"; find release/ -type f; exit 1; fi
+
           # 重命名为带架构后缀
-          cp release/x64/AsyncNetDLL.dll release/AsyncNetDLL-x64.dll
-          cp release/x86/AsyncNetDLL.dll release/AsyncNetDLL-x86.dll
+          cp "$DLL64" release/AsyncNetDLL-x64.dll
+          cp "$DLL86" release/AsyncNetDLL-x86.dll
 
           echo "=== Release files ==="
           file release/AsyncNetDLL-x64.dll
